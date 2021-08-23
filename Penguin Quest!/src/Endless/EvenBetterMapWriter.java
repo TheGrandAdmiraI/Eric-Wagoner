@@ -9,15 +9,17 @@ public class EvenBetterMapWriter {
 
     private String levelMap = "48\n8\n";
 
-    Random rand = new Random();
-    int r1;
-    int r2;
-    int r3;
-    int r4;
+    private Random rand;
+    private int r1;
+    private int r2;
+    private int r3;
+    private int r4;
 
-    File file = new File("Resources/Maps/endless.map");
+    private File file;// = new File("Resources/Maps/endless.map");
 
-    public EvenBetterMapWriter() throws IOException {
+    public EvenBetterMapWriter(String s) throws IOException {
+        file = new File(s);
+        rand = new Random();
         generateBlocks();
         for (int line = 0; line < 8; line++) {
             writeStart(line);
@@ -57,11 +59,7 @@ public class EvenBetterMapWriter {
                     addString(A.block4[line][i]);
                 }
                 break;
-            case 5:
-                for (int i = 0; i < 10; i++) {
-                    addString(A.block5[line][i]);
-                }
-                break;
+
         }
     }
 
@@ -101,8 +99,28 @@ public class EvenBetterMapWriter {
 
     private void toFile() throws IOException {
         file.createNewFile();
-        try (FileWriter writer = new FileWriter(file)) {
+        try {
+            FileWriter writer = new FileWriter(file);
             writer.write(levelMap);
+            writer.close();
+        } catch(IOException e){
+            e.printStackTrace();
         }
+    }
+
+    public int getR1() {
+        return r1;
+    }
+
+    public int getR2() {
+        return r2;
+    }
+
+    public int getR3() {
+        return r3;
+    }
+
+    public int getR4() {
+        return r4;
     }
 }

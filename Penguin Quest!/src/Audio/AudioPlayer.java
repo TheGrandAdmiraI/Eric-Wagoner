@@ -8,7 +8,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 
 public class AudioPlayer {
-
+/*
     private static HashMap<String, Clip> clips;
     private static int gap;
     private static boolean mute = false;
@@ -122,5 +122,5 @@ public class AudioPlayer {
         stop(s);
         clips.get(s).close();
     }
-
+*/
 }

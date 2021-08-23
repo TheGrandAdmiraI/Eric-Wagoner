@@ -2,9 +2,9 @@ package GameState;
 
 import Handlers.Keys;
 import TileMap.Background;
+import java.io.File;
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
 
 public class MenuState extends GameState {
 
@@ -13,6 +13,7 @@ public class MenuState extends GameState {
     private int currentChoice = 0;
     private String[] options = {
         "Start",
+        "Level Select",
         "How To Play",
         "Quit"
     };
@@ -70,12 +71,35 @@ public class MenuState extends GameState {
 
     private void select() {
         if (currentChoice == 0) {
-            gsm.setState(1);
+            gsm.setState(gsm.ENDLESSSTATE);
         }
         if (currentChoice == 1) {
-            gsm.setState(2);
+            gsm.setState(gsm.LEVELSELECTSTATE);
         }
         if (currentChoice == 2) {
+            gsm.setState(gsm.TUTORIALSTATE);
+        }
+        if (currentChoice == 3) {
+            System.out.println("Before exiting, we must delete files");
+            //here we want code to delete all the files we created
+            int levelNumber = 1;
+            File levelFile = new File("Resources/Maps/Infinite/endless" + levelNumber + ".map");
+            while(levelFile.exists()){
+                //delete each file that exists
+                System.out.println("Deleting file" + "/Maps/Infinite/endless" + levelNumber + ".map");
+                levelFile.delete();
+                levelNumber++;
+                levelFile = new File("Resources/Maps/Infinite/endless" + levelNumber + ".map");
+            }
+            levelNumber = 1;
+            levelFile = new File("Resources/Maps/Infinite/endless" + levelNumber + "entities.map");
+            while(levelFile.exists()){
+                //delete each file that exists
+                System.out.println("Deleting file" + "/Maps/Infinite/endless" + levelNumber + "entities.map");
+                levelFile.delete();
+                levelNumber++;
+                levelFile = new File("Resources/Maps/Infinite/endless" + levelNumber + "entities.map");
+            }
             System.exit(0);
         }
     }
@@ -97,3 +121,4 @@ public class MenuState extends GameState {
     }
 
 }
+

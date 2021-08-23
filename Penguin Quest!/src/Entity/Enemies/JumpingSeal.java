@@ -7,14 +7,17 @@ import Entity.Enemy;
 import TileMap.TileMap;
 import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
+import java.util.Random;
 
 import java.awt.image.BufferedImage;
 
 public class JumpingSeal extends Enemy{
 
     protected long jumpTimer;
-
-private BufferedImage[] sprites;
+    protected long randomTimer;
+    private Random rand = new Random();
+    private int r;
+    private BufferedImage[] sprites;
 
     public JumpingSeal(TileMap tm){
         super(tm);
@@ -35,6 +38,7 @@ private BufferedImage[] sprites;
 
         //start the jumptimer on init
         jumpTimer = System.nanoTime();
+        randomTimer = System.nanoTime();
 
         //load sprites
         try {
@@ -89,33 +93,9 @@ private BufferedImage[] sprites;
 
     }
 
-    public void update(){
-        //update position
-        getNextPosition();
-        checkTileMapCollision();
-        setPosition(xtemp, ytemp);
+    
 
-        //check flinching
-        if(flinching) {
-            long elapsed = (System.nanoTime() - flinchTimer) / 1000000;
-            if(elapsed > 400) {
-                flinching = false;
-            }
-        }
-
-        //if it hits a wall, change direction
-        if(right && dx == 0) {//if it hits a wall, dx is set to 0
-            right = false;
-            left = true;
-            facingRight = false;
-        }else if(left && dx == 0){
-            left = false;
-            right = true;
-            facingRight = true;
-        }
-
-        
-        //if it's about to fall off a cliff, turn around
+    public void checkCliff(){
         if(right && !bottomRight && !falling){ //bottomRight checks if the bottom right of the collision box is over air or not
             right = false;
             left = true;
@@ -125,18 +105,46 @@ private BufferedImage[] sprites;
             right = true;
             facingRight = true;
         }
-        
+    }
 
+    public void checkJump(){
         //jump at random intervals
         //higher jumpTimer, greater chance of jumping
         if(!jumping){
             long elapsed = (System.nanoTime() - jumpTimer) / 1000000;
-            if(elapsed > 5000){
+            long rt = (System.nanoTime() - randomTimer) / 1000000;
+            if(elapsed > 8000){
                 jumping = true;
                 jumpTimer = System.nanoTime();
+                randomTimer = System.nanoTime();
+            } else if(!falling && rt > 1000){//every 1s we want a 1/5 chance to jump
+                randomTimer = System.nanoTime();
+                //System.out.println("jumping seal checking for random jump");
+                r = rand.nextInt(100);//chooses a random from [0,99] =? 100 numbers total
+                if(r <20){ //1/5 chance of occuring
+                    jumping = true;
+                }
             }
         }
+    }
 
+    public void update(){
+        //update position
+        getNextPosition();
+        checkTileMapCollision();
+        setPosition(xtemp, ytemp);
+
+        //check flinching
+        checkFlinching();
+
+        //if it hits a wall, change direction
+        checkWall();
+
+        //if it's about to fall off a cliff, turn around
+        checkCliff(); //overriden in this class
+
+        //jump at random intervals
+        checkJump();
 
         //update animation
         animation.update();

@@ -39,6 +39,39 @@ public class Enemy extends MapObject {
         flinchTimer = System.nanoTime();
     }
 
+    public void checkWall(){
+        if(right && dx == 0) {//if it hits a wall, dx is set to 0
+            right = false;
+            left = true;
+            facingRight = false;
+        }else if(left && dx == 0){
+            left = false;
+            right = true;
+            facingRight = true;
+        }
+    }
+
+    public void checkCliff(){
+        if(right && !bottomRight){ //bottomRight checks if the bottom right of the collision box is over air or not
+            right = false;
+            left = true;
+            facingRight = false;
+        } else if(left && !bottomLeft){ //bottomLeft checks if the bottom left of the collision box is over air or not
+            left = false;
+            right = true;
+            facingRight = true;
+        }
+    }
+
+    public void checkFlinching(){
+        if(flinching) {
+            long elapsed = (System.nanoTime() - flinchTimer) / 1000000;
+            if(elapsed > 400) {
+                flinching = false;
+            }
+        }
+    }
+
     public void update(){
 
     }

@@ -1,4 +1,3 @@
-
 package Entity;
 
 import TileMap.TileMap;
@@ -29,7 +28,7 @@ public class FireBall extends MapObject{
 		//load sprites
 		try {
 			
-			BufferedImage spritesheet = ImageIO.read(getClass().getResourceAsStream("/Sprites/Player/fireball.gif"));
+			BufferedImage spritesheet = ImageIO.read(getClass().getResourceAsStream("/Sprites/Player/iceball.gif"));
 			
 			sprites = new BufferedImage[4];
 			for (int i = 0; i < sprites.length; i++) {
@@ -87,7 +86,7 @@ public class FireBall extends MapObject{
 	}
 	
 	public void draw(Graphics2D g) {
-		setMapPosition();
+                setMapPosition();
 		super.draw(g);	
 	}
 

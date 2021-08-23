@@ -6,15 +6,14 @@ import Entity.Enemy;
 import TileMap.TileMap;
 import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
-
 import java.awt.image.BufferedImage;
 public class Seagull extends Enemy{
-    private BufferedImage[] sprites;
     private double initx;
     private double inity;
     private boolean setPos;
     private double yChange;//these 2 variables define how far from the initial spawn the seagull will fly
     private double xChange; 
+    private BufferedImage[] sprites;
     public Seagull(TileMap tm) {
         super(tm);
 
@@ -38,7 +37,7 @@ public class Seagull extends Enemy{
         //load sprites
         try {
 
-            BufferedImage spritesheet = ImageIO.read(getClass().getResourceAsStream("/Sprites/Enemies/seal.png")); //the jumping seal uses the same sprites as the normal one
+            BufferedImage spritesheet = ImageIO.read(getClass().getResourceAsStream("/Sprites/Enemies/Seagull.png")); //the jumping seal uses the same sprites as the normal one
 
             sprites = new BufferedImage[4]; //3 is the number of frames in the animation
             for(int i = 0; i < sprites.length; i++){
@@ -51,7 +50,7 @@ public class Seagull extends Enemy{
 
         animation = new Animation();
         animation.setFrames(sprites);
-        animation.setDelay(200); //change this delay to change speed of animation: smaller number = quicker
+        animation.setDelay(150); //change this delay to change speed of animation: smaller number = quicker
 
         right = true; //starts by moving to the right
         facingRight = true;
@@ -113,29 +112,17 @@ public class Seagull extends Enemy{
             inity = y;
             setPos = true;
         }
+
         //update position
         getNextPosition();
         checkTileMapCollision();
         setPosition(xtemp, ytemp);
 
         //check flinching
-        if(flinching) {
-            long elapsed = (System.nanoTime() - flinchTimer) / 1000000;
-            if(elapsed > 400) {
-                flinching = false;
-            }
-        }
+        checkFlinching();
 
         //if it hits a wall, change direction
-        if(right && dx == 0) {//if it hits a wall, dx is set to 0
-            right = false;
-            left = true;
-            facingRight = false;
-        }else if(left && dx == 0){
-            left = false;
-            right = true;
-            facingRight = true;
-        }
+        checkWall();
 
         //update animation
         animation.update();

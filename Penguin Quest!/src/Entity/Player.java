@@ -1,11 +1,14 @@
-
 package Entity;
 
-import Audio.AudioPlayer;
+//import Audio.AudioPlayer;
 import TileMap.*;
 
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
+
+import Entity.PowerUps.PowerUp;
+import SaveState.Lives;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
@@ -19,6 +22,9 @@ public class Player extends MapObject {
     private boolean dead;
     private boolean flinching;
     private long flinchTimer;
+    private Lives lives;
+    
+    private Inventory myInventory;
 
     // fireball
     private boolean firing;
@@ -36,10 +42,16 @@ public class Player extends MapObject {
 
     // animations
     private ArrayList<BufferedImage[]> sprites;
-    private final int[] numFrames = {
-        2, 8, 1, 2, 4, 2, 5
-    };
 
+    private final int[] numFrames = {
+
+       2, 4, 4, 2, 4, 2, 4
+    };
+  /*
+  private final int[] numFrames = {
+        2, 4, 1, 2, 4, 2, 4
+    };
+*/
     // animation actions
     private static final int IDLE = 0;
     private static final int WALKING = 1;
@@ -54,16 +66,28 @@ public class Player extends MapObject {
     private double jumpingModifier; //changes how fast the player stops jumping when holding spacebar
     private double glidingModifier; //changes how much gliding diminishes the fallspeed
 
+    //Timer & other variables for powerups
+    //private int timer;
+    private double formerValue;
+    private static final int SPEEDCHANGE = 0;
+    private static final int DOUBLEJUMP = 1;
+    private static final int FIREBALLDAMAGE = 2;
+    private int powerUpChange;
+    private long powerupTimer;
+    private boolean powerUpActive;
 
     public Player(TileMap tm) {
 
         super(tm);
+        
 
         width = 30;
         height = 30;
         cwidth = 20;
         cheight = 20;
 
+        myInventory = new Inventory();
+        
        /*
         moveSpeed = 0.3;
         maxSpeed = 1.6;
@@ -85,9 +109,12 @@ public class Player extends MapObject {
         jumpingModifier = .35; //this is a percent modifier
 
         facingRight = true;
+        dead = false;
 
         health = maxHealth = 5;
         fire = maxFire = 2500;
+
+        lives = new Lives(3); //sets the default number of lives, which is 3
 
         fireCost = 200;
         fireBallDamage = 5;
@@ -96,6 +123,12 @@ public class Player extends MapObject {
         scratchDamage = 8;
         scratchRange = 40;
 
+        //initialize powerup variables
+        //timer = -100;
+        formerValue  = -100;
+        powerUpChange = -100;
+        powerUpActive = false;
+        
         // load sprites
         try {
 
@@ -122,9 +155,9 @@ public class Player extends MapObject {
                         );
                     } else {
                         bi[j] = spritesheet.getSubimage(
-                                j * width * 2,
+                                j * width,
                                 i * height,
-                                width * 2,
+                                width,
                                 height
                         );
                     }
@@ -144,16 +177,23 @@ public class Player extends MapObject {
         animation.setFrames(sprites.get(IDLE));
         animation.setDelay(400);
         
-        AudioPlayer.load("/SFX/jump.mp3", "playerjump");
-
+        //AudioPlayer.load("/SFX/jump.mp3", "playerjump");
     }
 
     public int getHealth() {
         return health;
     }
 
+    public Lives getLives(){
+        return lives;
+    }
+
     public int getMaxHealth() {
         return maxHealth;
+    }
+
+    public boolean isDead(){
+        return dead;
     }
 
     public int getFire() {
@@ -176,35 +216,46 @@ public class Player extends MapObject {
         gliding = b;
     }
 
-    public void checkAttack(ArrayList<Enemy> enemies) {
-        //loop through enemies
-        for(int i = 0; i < fireBalls.size(); i++){
-            Enemy e = enemies.get(i);
-            //scratch attack
-            if(scratching){
-                if(facingRight) {
-                    if(e.getx() > x && e.getx() < x + scratchRange && e.gety() > y-height/2 && e.gety() < y + height / 2){
-                        e.hit(scratchDamage);
+    public void checkAttack(ArrayList<Enemy> enemies) {	
+        // loop through enemies
+        for(int i = 0; i < enemies.size(); i++) { 	
+                Enemy e = enemies.get(i);	
+                // scratch attack
+                if(scratching) {
+                    if(facingRight) {
+                        if(
+                        // it checks to make sure that enemy is to our right since we are facing right	
+                        e.getx() > x &&
+                        e.getx() < x + scratchRange && 
+                        e.gety() > y - height / 2 &&
+                        e.gety() < y + height / 2
+                        ) {
+                            e.hit(scratchDamage);
+                        }
+                    } else {
+                        if(
+                            // the enemy is to our left	
+                            e.getx() < x &&
+                            e.getx() > x - scratchRange &&
+                            e.gety() > y - height / 2 &&
+                            e.gety() < y + height / 2
+                        ) {
+                            e.hit(scratchDamage);
+                        }
                     }
-                }
-                else{
-                    if(e.getx() < x && e.getx() > x - scratchRange && e.gety() > y-height/2 && e.gety() < y + height / 2){
-                        e.hit(scratchDamage);
+                }		
+                // fireballs
+                for(int j = 0; j < fireBalls.size(); j++) { //loop through fireballs
+                    if(fireBalls.get(j).intersects(e)) {
+                        e.hit(fireBallDamage);
+                        fireBalls.get(j).setHit();
+                        break;
                     }
-                }
-            }
-            //fireballs
-            for(int j = 0; j < enemies.size(); j++){
-                if(fireBalls.get(j).intersects(e)){
-                    e.hit(fireBallDamage);
-                    fireBalls.get(j).setHit();
-                    break;
-                }
-            }
-            //check for enemy collision
-            if(intersects(e)){
-                hit(e.getDamage());
-            }
+                }	
+                // check enemy collision
+                if(intersects(e)) {
+                    hit(e.getDamage());
+                }		
         }
     }
 
@@ -292,6 +343,10 @@ public class Player extends MapObject {
                 dy = maxFallSpeed;
             }
 
+            if(y < 10){
+                dy = 1;
+            }
+
         }
 
     }
@@ -357,7 +412,7 @@ public class Player extends MapObject {
                 currentAction = SCRATCHING;
                 animation.setFrames(sprites.get(SCRATCHING));
                 animation.setDelay(50);
-                width = 60;
+                width = 30;
             }
         } else if (firing) {
             if (currentAction != FIREBALL) {
@@ -415,6 +470,8 @@ public class Player extends MapObject {
             }
         }
 
+        //update Powerup timer
+        checkTimer();
     }
 
     public void draw(Graphics2D g) {
@@ -456,4 +513,53 @@ public class Player extends MapObject {
 
     }
 
+    //Additional methods for powerups
+    public double getMaxSpeed() {
+    	return maxSpeed;
+    }
+    
+    public void setHealth(int x) {health = x;}
+    
+    public void setSpeed(double x) {formerValue = maxSpeed; maxSpeed = x; /*timer = 0;*/ powerupTimer = System.nanoTime(); powerUpChange = SPEEDCHANGE; powerUpActive = true;}
+    
+    public void setDoubleJump() {formerValue = jumpingModifier; jumpingModifier = jumpingModifier/2; /*timer = 0;*/ powerupTimer = System.nanoTime(); powerUpChange = DOUBLEJUMP; powerUpActive = true;}
+    
+    public void setFireballDamage() {formerValue = fireBallDamage; fireBallDamage = fireBallDamage*10; /*timer = 0;*/ powerupTimer = System.nanoTime(); powerUpChange = FIREBALLDAMAGE; powerUpActive = true;}
+    
+    public void checkTimer() { //the powerup only lasts for 1 second
+        if(powerUpActive){
+            long elapsed = (System.nanoTime() - powerupTimer) / 1000000;
+            //System.out.println(elapsed);
+            if (elapsed >= 5000) {
+                //if 2000 ms, (2 second) has elapsed since the powerup began
+                if (powerUpChange == SPEEDCHANGE) {
+                    maxSpeed = formerValue;
+                    formerValue = -100;
+                    powerUpChange = -100;
+                    powerUpActive = false;
+                }else if (powerUpChange == DOUBLEJUMP) {
+                    jumpingModifier = formerValue;
+                    formerValue = -100;
+                    powerUpChange = -100;
+                    powerUpActive = false;
+                }else if (powerUpChange == FIREBALLDAMAGE) {
+                    fireBallDamage = (int)formerValue;
+                    formerValue = -100;
+                    powerUpChange = -100;
+                    powerUpActive = false;
+                }
+                
+            }
+        }
+        
+    }
+    
+    public void addToInventory(PowerUp p) {
+    	myInventory.addObject(p);
+    }
+   
+    public Inventory getInventory() {return myInventory;}
+    public void usePowerUp() {
+    	myInventory.useObject(0);
+    }
 }

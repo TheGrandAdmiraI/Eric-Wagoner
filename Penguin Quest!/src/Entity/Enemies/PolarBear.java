@@ -7,17 +7,21 @@ import Entity.Enemy;
 import TileMap.TileMap;
 import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
-
+import java.util.Random;
 import java.awt.image.BufferedImage;
 
 
 public class PolarBear extends Enemy{
     protected long standTimer;
+    protected long randomTimer;
     private BufferedImage[] walkSprites;
     private BufferedImage[] standSprites;
     private boolean standing;
     private int wad; //walking animation delay
     private int sad; //standing animation delay
+    //variables to deal with the random chance of standing
+    Random rand = new Random();
+    private int r;
     public PolarBear(TileMap tm){
         super(tm);
 
@@ -33,16 +37,17 @@ public class PolarBear extends Enemy{
         cwidth = 60; //collision box size
         cheight = 30; //collision box size
 
-        health = maxHealth = 50;
+        health = maxHealth = 15;
         damage = 1;
 
         //start the standtimer on init
         standTimer = System.nanoTime();
+        randomTimer = System.nanoTime();
 
         //load sprites
         try {
 
-            BufferedImage spritesheet = ImageIO.read(getClass().getResourceAsStream("/Sprites/Enemies/notapolarbear.png")); //currently just a rectangle :( simply for demo purposes
+            BufferedImage spritesheet = ImageIO.read(getClass().getResourceAsStream("/Sprites/Enemies/PolarBear.png")); //currently just a rectangle :( simply for demo purposes
 
             walkSprites = new BufferedImage[2]; //2 is the number of frames in the animation
             for(int i = 0; i < walkSprites.length; i++){
@@ -105,6 +110,7 @@ public class PolarBear extends Enemy{
         cheight = 60; //collision box size
 
         dx = 0; //we don't want the polar bear walking while standing
+        standTimer = System.nanoTime();
     }
 
     public void setWalking(){
@@ -117,22 +123,11 @@ public class PolarBear extends Enemy{
 
         cwidth = 60; //collision box size
         cheight = 30; //collision box size
+        standTimer = System.nanoTime();
     }
 
-    public void update(){
-        //update position
-        getNextPosition();
-        checkTileMapCollision();
-        setPosition(xtemp, ytemp);
-
-        //check flinching
-        if(flinching) {
-            long elapsed = (System.nanoTime() - flinchTimer) / 1000000;
-            if(elapsed > 400) {
-                flinching = false;
-            }
-        }
-
+    //needs to define again since it also doesn't move while standing
+    public void checkWall(){
         //if it hits a wall, change direction
         if(right && dx == 0 && !standing) {//if it hits a wall, dx is set to 0 unless standing
             right = false;
@@ -143,32 +138,50 @@ public class PolarBear extends Enemy{
             right = true;
             facingRight = true;
         }
+    }
 
-        
-        //if it's about to fall off a cliff, turn around
-        if(right && !bottomRight && !falling){ //bottomRight checks if the bottom right of the collision box is over air or not
-            right = false;
-            left = true;
-            facingRight = false;
-        } else if(left && !bottomLeft && !falling){ //bottomLeft checks if the bottom left of the collision box is over air or not
-            left = false;
-            right = true;
-            facingRight = true;
-        }
-        
+    
 
+    public void checkStand(){
         //stand at random intervals
         //higher standTimer, greater chance of jumping
-        long elapsed = (System.nanoTime() - standTimer) / 1000000;
+        long elapsed = (System.nanoTime() - standTimer) / 1000000;//outputs time since last set to stand or walk in ms
+        long rt = (System.nanoTime() - randomTimer) / 1000000; //this timer is used for doing a random calculation at set intervals
+        //System.out.println("random timer: " + rt);
         //System.out.println("standTimer (ms): " + elapsed);
-        if(!standing && elapsed > 5000){
+        if(!standing && elapsed > 8000){ //if it's been more than 8 seconds, then stand
             setStanding();
-            standTimer = System.nanoTime();
-        } else if(standing && elapsed > 1000){
+        } else if(standing && elapsed > 1000){ //only stand for 1 second
             setWalking();
-            standTimer = System.nanoTime();
+            //sometimes will stand for 2 seconds if we don't reset the random timer
+            randomTimer = System.nanoTime();
+        } else if(!standing && rt > 1000){//every 1s we want a 1/5 chance to jump
+            randomTimer = System.nanoTime();
+            //System.out.println("polar bear checking for random jump");
+            r = rand.nextInt(100);//chooses a random from [0,99] =? 100 numbers total
+            if(r <20){ //1/5 chance of occuring
+                setStanding();
+            }
         }
+    }
 
+    public void update(){
+
+        checkWall(); //overriden in this class
+
+        //if it's about to fall off a cliff, turn around
+        checkCliff();
+
+        //stand at random intervals
+        checkStand();
+        
+        //update position
+        getNextPosition();
+        checkTileMapCollision();
+        setPosition(xtemp, ytemp);
+
+        //check flinching
+        checkFlinching();
 
         //update animation
         animation.update();
