@@ -1,11 +1,11 @@
 Penguin Quest! is a 2D action platformer game created for CSI 2999 (Sophomore Project) Winter 2021 Semester at Oakland University. It was created by the combined effort of Eric Wagoner, Elio Zoto, Ruth Wager, and Lucas Stinson.
 Features include:
 - A player
-- Enemies and Obstacles
-- Boss Levels
+- Enemies and obstacles
+- Boss levels
 - Powerups
 - Tutorial
-- Score System
+- Score system
 - **IRPD levels (infinite randomized, progressively difficult levels)**
 - Replay levels
 
