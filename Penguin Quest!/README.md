@@ -7,7 +7,7 @@ Features include:
 - Tutorial
 - Score System
 - **IRPD levels (infinite randomized, progressively difficult levels)**
-- replay levels
+- Replay levels
 
 If you have any questions about certain parts of the game, or who worked on what, please, don't hesitate to ask.
 
