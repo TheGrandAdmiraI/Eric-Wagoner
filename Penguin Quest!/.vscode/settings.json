@@ -1,8 +1,0 @@
-{
-    "java.project.referencedLibraries": [
-        "Libs/jl1.0.1.jar",
-        "Libs/mp3spi1.9.5.jar",
-        "Libs/tritonus_share.jar",
-        "Libs/CopyLibs/org-netbeans-modules-java-j2seproject-copylibstask.jar"
-    ]
-}
