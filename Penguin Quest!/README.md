@@ -2,6 +2,8 @@ Penguin Quest! is a 2D action platformer game created for CSI 2999 (Sophomore Pr
 
 There were some difficulties exporting the game as an executable, but it runs in VS Code.
 
+If you have any questions about certain parts of the game, or who worked on what, please, don't hesitate to ask.
+
 To run the game, follow these instructions:
 
     Install VS Code and the necessary Java pluggins following the instructions of this link: https://code.visualstudio.com/docs/languages/java
