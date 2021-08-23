@@ -1,2 +1,2 @@
-# Eric-Wagoner
-Here are some of the projects I've worked on that demonstrate my skills
+# Object Oriented Computing
+There are my homework assignments from my Object Oriented Computing class winter semester 2020 at Oakland University
