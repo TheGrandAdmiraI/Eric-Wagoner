@@ -196,15 +196,24 @@ public class EvenBetterMapWriter2 {
     private void generateBlocks() {
         //the difficulty will determine the randomization of the variables
         //System.out.println("\n\nlevel number: " + levelNumber);
-        difficulty = 10 + (10 * ((levelNumber - 1) / 5)); //increase difficulty by 10 after every boss level
+//        difficulty = 10 + (10 * ((levelNumber - 1) / 5)); //increase difficulty by 10 after every boss level
         /*if(difficulty > 100){ 
             difficulty = 100; //max difficulty of 100
         }*///since we're increasing the number of blocks after every boss level, we don't really need to have a max difficulty
         //System.out.println("level difficulty: " + difficulty);
         
         //first we determine how many blocks will be generated for the level since we want the level length to change
-        length = 2 + difficulty/5; //default is 4 blocks, increase by 2 after every boss level
+//        length = 2 + difficulty/5; //default is 4 blocks, increase by 2 after every boss level
         //difficulty increases by increments of 10. 10/5 = 2. Starts at 10 difficulty
+
+
+        //what if we did this instead?
+        length = 4 + 2 * ((levelNumber - 1) / 5); //default is 4 block length, increase by 2 after every boss level
+        difficulty = ((4 * (levelNumber - 1) / 5) + 2) * length;//we want the difficulty to grow per block after every boss level, let's say starts with average of 2, then grows by 4 per block. Max avg of 20.
+        if(difficulty > (10 * length)){ //max average of 20 difficulty per length because we have max of 20 difficulty block;
+            difficulty = 20 * length;
+        }
+
 
         //System.out.println("The level length is: " + length + " blocks");
         blocks = new int[length];
